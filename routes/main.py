@@ -3,8 +3,8 @@ from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from app import db
-from models import User, Post, Like, Community
-from forms import PostForm
+from models import User, Post, Like, Community, Project
+from forms import PostForm, ProjectForm
 
 bp = Blueprint('main', __name__)
 
@@ -134,3 +134,44 @@ def like(post_id):
         liked = True
 
     return jsonify({'success': True, 'likes_count': post.likes.count(), 'liked': liked})
+
+@bp.route('/project/<int:project_id>/toggle_support', methods=['POST'])
+@login_required
+def toggle_support(project_id):
+    project = Project.query.get_or_404(project_id)
+    if current_user.has_supported_project(project):
+        current_user.supported_projects.remove(project)
+        db.session.commit()
+        is_supporter = False
+    else:
+        current_user.supported_projects.append(project)
+        db.session.commit()
+        is_supporter = True
+
+    return jsonify({
+        'success': True,
+        'is_supporter': is_supporter,
+        'supporter_count': project.supporters.count()
+    })
+
+@bp.route('/create-project', methods=['GET', 'POST'])
+@login_required
+def create_project():
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project = Project(title=form.title.data,
+                          tagline=form.tagline.data,
+                          description=form.description.data,
+                          owner=current_user)
+        db.session.add(project)
+        db.session.commit()
+        flash('Your project has been created and is now live!', 'success')
+        return redirect(url_for('main.index')) # Redirect to home page for now
+    return render_template('create_project.html', title='Pitch a New Project', form=form)
+
+@bp.route('/innovation')
+@login_required
+def innovation_hub():
+    projects = Project.query.order_by(Project.timestamp.desc()).all()
+    return render_template('innovation_hub.html', title='Innovation Hub',
+                           projects=projects, active_nav='innovation')

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4">Innovation Hub</h1>
+        <div>
+            <a href="{{ url_for('main.search', tab='innovation') }}" class="btn btn-light"><i class="fas fa-search"></i></a>
+            <a href="{{ url_for('main.create_project') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Pitch Idea</a>
+        </div>
+    </div>
+
+    <!-- Featured / Spotlight Section (Placeholder) -->
+    <div class="featured-spotlight mb-4">
+        <h5 class="mb-3">Spotlight</h5>
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">🏆 Hackathon Winners Announced</h5>
+                <p class="card-text">Check out the innovative projects from our latest hackathon.</p>
+                <a href="#" class="btn btn-light btn-sm">Read More</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects & Startups Section -->
+    <div class="projects-startups mb-4">
+        <h5 class="mb-3">Projects & Startups</h5>
+        {% if projects %}
+            {% for project in projects %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <img src="https://via.placeholder.com/50" class="rounded mr-3" alt="Project Icon">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">{{ project.title }}</h6>
+                            <small class="text-muted">{{ project.tagline }}</small>
+                        <br>
+                        <small class="text-muted"><span class="supporter-count">{{ project.supporters.count() }}</span> supporters</small>
+                        </div>
+                    {% if current_user.has_supported_project(project) %}
+                        <a href="#" class="btn btn-primary btn-sm support-btn" data-project-id="{{ project.id }}">Supported</a>
+                    {% else %}
+                        <a href="#" class="btn btn-outline-primary btn-sm support-btn" data-project-id="{{ project.id }}">Support</a>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center text-muted">
+                    <p>No projects have been pitched yet. Be the first!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Other sections like Opportunities, Research etc. can be added here as placeholders -->
+
+</div>
+{% endblock %}

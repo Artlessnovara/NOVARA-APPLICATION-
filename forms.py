@@ -26,3 +26,9 @@ class PostForm(FlaskForm):
     text_content = TextAreaField("What's on your mind?", validators=[DataRequired(), Length(min=1, max=500)])
     community = SelectField('Post to Community', coerce=int)
     submit = SubmitField('Post')
+
+class ProjectForm(FlaskForm):
+    title = StringField('Project Title', validators=[DataRequired(), Length(min=5, max=150)])
+    tagline = StringField('Tagline', validators=[DataRequired(), Length(min=10, max=250)])
+    description = TextAreaField('Detailed Description', validators=[DataRequired(), Length(min=50)])
+    submit = SubmitField('Pitch Project')
