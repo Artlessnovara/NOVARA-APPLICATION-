@@ -45,3 +45,27 @@ class StoryForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'], 'Images or Videos only!')
     ])
     submit = SubmitField('Post Story')
+
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Reset Password')
+
+class CreativeWorkForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(max=150)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    category = SelectField('Category', choices=[
+        ('Art', 'Art'),
+        ('Music', 'Music'),
+        ('Writing', 'Writing'),
+        ('Stage', 'Stage')
+    ], validators=[DataRequired()])
+    media = FileField('Upload Your Work', validators=[
+        DataRequired(),
+        FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp3', 'wav', 'pdf', 'txt'], 'Allowed files are images, audio, or documents.')
+    ])
+    submit = SubmitField('Share Work')

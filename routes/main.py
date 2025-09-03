@@ -6,10 +6,17 @@ from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project, Media, Comment, Story
-from forms import PostForm, ProjectForm, StoryForm
+from models import User, Post, Like, Community, Project, Media, Comment, Story, CreativeWork
+from forms import PostForm, ProjectForm, StoryForm, CreativeWorkForm
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/profile/<int:user_id>')
+@login_required
+def profile(user_id):
+    user = User.query.get_or_404(user_id)
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('profile.html', title=f"{user.full_name}'s Profile", user=user, posts=posts)
 
 @bp.route('/')
 @login_required
@@ -285,6 +292,42 @@ def create_story():
         flash('Your story has been posted!', 'success')
         return redirect(url_for('main.index'))
     return render_template('create_story.html', title='Create Story', form=form)
+
+@bp.route('/creativity')
+@login_required
+def creativity_hub():
+    works = CreativeWork.query.order_by(CreativeWork.timestamp.desc()).all()
+    return render_template('creativity_hub.html', title='Creativity Hub',
+                           works=works, active_nav='creativity')
+
+@bp.route('/creativity/upload', methods=['GET', 'POST'])
+@login_required
+def upload_creative_work():
+    form = CreativeWorkForm()
+    if form.validate_on_submit():
+        file = form.media.data
+        filename = secure_filename(file.filename)
+
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads/creative')
+        os.makedirs(upload_folder, exist_ok=True) # Ensure the folder exists
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        db_file_path = os.path.join('uploads/creative', filename)
+
+        new_work = CreativeWork(
+            title=form.title.data,
+            description=form.description.data,
+            category=form.category.data,
+            file_path=db_file_path,
+            author=current_user
+        )
+        db.session.add(new_work)
+        db.session.commit()
+        flash('Your creative work has been shared!', 'success')
+        return redirect(url_for('main.creativity_hub'))
+
+    return render_template('create_creative_work.html', title='Share Your Work', form=form)
 
 @bp.route('/api/stories')
 @login_required

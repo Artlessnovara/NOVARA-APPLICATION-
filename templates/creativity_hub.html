@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2">Creativity Hub</h1>
+            <p class="text-muted">Discover art, music, writing, and more from the community.</p>
+        </div>
+        <a href="{{ url_for('main.upload_creative_work') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Share Your Work
+        </a>
+    </div>
+
+    <!-- Category Tabs (Placeholder for future filtering) -->
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item"><a class="nav-link active" href="#">All</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Art</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Music</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Writing</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Stage</a></li>
+    </ul>
+
+    <!-- Grid of Creative Works -->
+    <div class="row">
+        {% if works %}
+            {% for work in works %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        {% set file_ext = work.file_path.split('.')[-1].lower() %}
+                        {% if file_ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                            <img src="{{ url_for('static', filename=work.file_path) }}" class="card-img-top" alt="{{ work.title }}" style="height: 180px; object-fit: cover;">
+                        {% elif file_ext in ['mp3', 'wav'] %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-dark" style="height: 180px;">
+                                <i class="fas fa-music fa-3x text-secondary"></i>
+                            </div>
+                        {% else %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-dark" style="height: 180px;">
+                                <i class="fas fa-file-alt fa-3x text-secondary"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ work.title }}</h5>
+                            <p class="card-text text-muted">By <a href="{{ url_for('main.profile', user_id=work.author.id) }}">{{ work.author.full_name }}</a></p>
+                            <span class="badge badge-secondary">{{ work.category }}</span>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Shared on {{ work.timestamp.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="text-center p-5">
+                    <h4 class="text-muted">The canvas is blank...</h4>
+                    <p>No creative works have been shared yet. Be the first to share something!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

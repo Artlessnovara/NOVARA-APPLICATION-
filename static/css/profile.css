@@ -1,0 +1,75 @@
+/* --- Deep Charcoal Theme for Profile Page --- */
+
+:root {
+    --charcoal-bg: #121212;
+    --charcoal-card-bg: #1e1e1e;
+    --charcoal-border: #2c2c2c;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-gradient: linear-gradient(90deg, #00E0FF, #0066FF);
+    --accent-glow: 0 0 8px rgba(0, 224, 255, 0.7);
+}
+
+body {
+    background-color: var(--charcoal-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Ensure the main content area respects the theme */
+.profile-page {
+    color: var(--text-primary);
+}
+
+/* --- Typography --- */
+.profile-page a {
+    color: #00A0FF;
+}
+.profile-page a:hover {
+    color: #00E0FF;
+}
+
+/* --- Cards --- */
+.profile-page .card {
+    background-color: var(--charcoal-card-bg);
+    border: 1px solid var(--charcoal-border);
+    color: var(--text-primary);
+}
+
+.profile-page .card-header, .profile-page .card-footer {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--charcoal-border);
+    border-top: 1px solid var(--charcoal-border);
+}
+
+/* --- Buttons --- */
+.profile-page .btn-primary {
+    background-image: var(--accent-gradient);
+    border: none;
+    color: white !important;
+    transition: box-shadow 0.2s ease;
+}
+.profile-page .btn-primary:hover {
+    box-shadow: var(--accent-glow);
+}
+
+.profile-page .btn-secondary {
+    background-color: #333;
+    border-color: #555;
+    color: var(--text-primary);
+}
+
+/* --- Tabs --- */
+.profile-page .nav-tabs .nav-link {
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+}
+
+.profile-page .nav-tabs .nav-link.active {
+    background-color: var(--charcoal-card-bg);
+    border-color: var(--charcoal-border) var(--charcoal-border) var(--charcoal-card-bg);
+    color: var(--text-primary);
+}
+
+.profile-page .nav-tabs {
+    border-bottom: 1px solid var(--charcoal-border);
+}
