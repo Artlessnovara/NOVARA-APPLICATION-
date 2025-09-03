@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Share Your Creative Work</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_field(form.title) }}
+                        {{ wtf.form_field(form.description, rows=4) }}
+                        {{ wtf.form_field(form.category) }}
+                        <div class="form-group">
+                            {{ form.media.label(class="form-control-label") }}
+                            {{ form.media(class="form-control-file") }}
+                            {% if form.media.errors %}
+                                {% for error in form.media.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            {{ wtf.form_field(form.submit, class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

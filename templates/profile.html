@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container profile-page mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- Top Area -->
+            <div class="text-center">
+                <img src="https://via.placeholder.com/150" class="rounded-circle" alt="Profile Picture" width="150" height="150">
+                <h2 class="mt-3">{{ user.full_name }}</h2>
+                <p class="text-muted">Bio placeholder: {{ user.role }} at Scholars Novara Institute.</p>
+                <div class="d-flex justify-content-center my-3">
+                    <div class="px-3">
+                        <strong>{{ user.followed.count() }}</strong> <span class="text-muted">Following</span>
+                    </div>
+                    <div class="px-3">
+                        <strong>{{ user.followers.count() }}</strong> <span class="text-muted">Followers</span>
+                    </div>
+                </div>
+                <div class="my-3">
+                    <button class="btn btn-primary">💬 Message</button>
+                    <button class="btn btn-secondary">⋯ More</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs justify-content-center" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-controls="posts" aria-selected="true">Posts</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reels-tab" data-bs-toggle="tab" data-bs-target="#reels" type="button" role="tab" aria-controls="reels" aria-selected="false">Reels</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos" type="button" role="tab" aria-controls="photos" aria-selected="false">Photos</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="certs-tab" data-bs-toggle="tab" data-bs-target="#certs" type="button" role="tab" aria-controls="certs" aria-selected="false">Certificates</button>
+                </li>
+            </ul>
+
+            <!-- Tabs Content -->
+            <div class="tab-content mt-3" id="profileTabsContent">
+                <!-- Posts Tab -->
+                <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                    {% if posts %}
+                        {% for post in posts %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="card-text">{{ post.text_content }}</p>
+                                    <small class="text-muted">Posted on {{ post.timestamp.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center p-4">
+                            <p>This user hasn't posted anything yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Reels Tab (Placeholder) -->
+                <div class="tab-pane fade" id="reels" role="tabpanel" aria-labelledby="reels-tab">
+                    <p class="text-center p-4">Reels will be displayed here.</p>
+                </div>
+
+                <!-- Photos Tab (Placeholder) -->
+                <div class="tab-pane fade" id="photos" role="tabpanel" aria-labelledby="photos-tab">
+                    <p class="text-center p-4">Photos will be displayed here.</p>
+                </div>
+
+                <!-- Certificates Tab (Placeholder) -->
+                <div class="tab-pane fade" id="certs" role="tabpanel" aria-labelledby="certs-tab">
+                    <p class="text-center p-4">Certificates will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
