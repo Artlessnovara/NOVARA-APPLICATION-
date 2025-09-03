@@ -1,0 +1,36 @@
+/* Styles for the Quick Create Bottom Sheet */
+
+.bottom-sheet.modal {
+    display: flex !important;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.bottom-sheet .modal-dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+.bottom-sheet .modal-content {
+    border-radius: 1rem 1rem 0 0;
+    border: none;
+    /* Animation */
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+}
+
+.bottom-sheet.show .modal-content {
+    transform: translateY(0);
+}
+
+.bottom-sheet .list-group-item {
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+.bottom-sheet .list-group-item i {
+    width: 24px;
+    margin-right: 1rem;
+    color: #495057;
+}

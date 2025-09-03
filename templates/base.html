@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% if current_user.is_authenticated %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/quick_create.css') }}">
     {% endif %}
     {% block styles %}{% endblock %}
 </head>
@@ -28,7 +29,10 @@
                 <a class="nav-link" href="{{ url_for('main.search') }}"><i class="fas fa-search"></i></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="fas fa-plus-square"></i></a>
+                <!-- This is the trigger for the bottom sheet -->
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#quickCreateSheet">
+                    <i class="fas fa-plus-square"></i>
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#"><i class="fas fa-bars"></i></a>
@@ -84,12 +88,49 @@
             <span>Profile</span>
         </a>
     </nav>
+
+    <!-- Quick Create Bottom Sheet Modal -->
+    <div class="modal fade bottom-sheet" id="quickCreateSheet" tabindex="-1" role="dialog" aria-labelledby="quickCreateSheetLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quickCreateSheetLabel">Create New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action disabled">
+                            <i class="fas fa-edit"></i> Post / Share Update
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action disabled">
+                            <i class="fas fa-video"></i> Upload Media
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action disabled">
+                            <i class="fas fa-lightbulb"></i> Start Project / Idea
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action disabled">
+                            <i class="fas fa-calendar-alt"></i> Create Event
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action disabled">
+                            <i class="fas fa-folder"></i> Share Resource
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endif %}
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+        {% if current_user.is_authenticated %}
+            <script src="{{ url_for('static', filename='js/quick_create.js') }}"></script>
+        {% endif %}
+    {% endblock %}
 </body>
 </html>
