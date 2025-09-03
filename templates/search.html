@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Sticky Search Container -->
+<div class="sticky-top-container">
+    <form method="GET" action="{{ url_for('main.search') }}">
+        <div class="search-header">
+            <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-link"><i class="fas fa-arrow-left"></i></a>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="search-input" name="q" placeholder="Search people, posts, communities…" value="{{ query }}">
+                </div>
+                <div class="col-auto">
+                    <a href="{{ url_for('main.search') }}" id="clear-search-btn" class="btn btn-link" title="Clear search"><i class="fas fa-times"></i></a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="search-tabs">
+        <ul class="nav nav-tabs nav-justified">
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'all' %}active{% endif %}" href="{{ url_for('main.search', q=query, tab='all') }}">All</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'people' %}active{% endif %}" href="{{ url_for('main.search', q=query, tab='people') }}">People</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Communities</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Innovation</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Creativity</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Resources</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Results Area -->
+<div class="search-results">
+
+    {% if not query %}
+        <!-- State: Recent Searches (shown before typing) -->
+        <div class="recent-searches">
+            <h5>Recent Searches</h5>
+            <!-- This is a placeholder. A full implementation would require JavaScript and localStorage. -->
+            <p class="text-muted">Your recent searches will appear here.</p>
+        </div>
+
+    {% elif people_results %}
+        <!-- State: Search Results -->
+        <div class="results-list">
+            {% if active_tab in ['all', 'people'] %}
+                <h5 class="mb-3">People</h5>
+                {% for user in people_results %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex align-items-center">
+                        <img src="https://via.placeholder.com/50" class="rounded-circle mr-3" alt="Avatar">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">{{ user.full_name }}</h6>
+                            <small class="text-muted">{{ user.role }}</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm">Follow</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+    {% else %}
+        <!-- State: No Results -->
+        <div class="no-results-state" style="text-align: center; padding: 2rem;">
+            <h5>No results for '{{ query }}'</h5>
+            <p class="text-muted">Try searching for something else.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,29 @@
+/* Styles for the Search Screen */
+
+.sticky-top-container {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 56px; /* Height of the main top nav */
+    background-color: #ffffff;
+    z-index: 1020;
+}
+
+.search-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.search-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.search-results {
+    margin-top: 1rem;
+}
+
+.recent-searches-list .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
