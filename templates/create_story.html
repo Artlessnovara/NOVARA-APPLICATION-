@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <h3>Upload a New Story</h3>
+            <p class="text-muted">Your story will be visible for 24 hours.</p>
+            <div>
+                {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

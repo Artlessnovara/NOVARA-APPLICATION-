@@ -16,7 +16,7 @@ class SignupForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
 from wtforms import TextAreaField
-from flask_wtf.file import MultipleFileField, FileAllowed
+from flask_wtf.file import FileField, MultipleFileField, FileAllowed
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -38,3 +38,10 @@ class ProjectForm(FlaskForm):
     tagline = StringField('Tagline', validators=[DataRequired(), Length(min=10, max=250)])
     description = TextAreaField('Detailed Description', validators=[DataRequired(), Length(min=50)])
     submit = SubmitField('Pitch Project')
+
+class StoryForm(FlaskForm):
+    media = FileField('Upload Image or Video', validators=[
+        DataRequired(),
+        FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'], 'Images or Videos only!')
+    ])
+    submit = SubmitField('Post Story')

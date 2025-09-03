@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     owned_projects = db.relationship('Project', backref='owner', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    stories = db.relationship('Story', backref='author', lazy='dynamic')
 
     communities = db.relationship('Community', secondary=community_members,
                                   backref=db.backref('members', lazy='dynamic'),
@@ -104,3 +105,13 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f'<Comment {self.text_content[:50]}...>'
+
+class Story(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    media_type = db.Column(db.String(50), nullable=False) # 'image' or 'video'
+    file_path = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Story {self.id} by User {self.user_id}>'
