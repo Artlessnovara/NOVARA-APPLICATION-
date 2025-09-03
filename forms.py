@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, SubmitField
+from wtforms import StringField, PasswordField, SelectField, SubmitField, DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 class SignupForm(FlaskForm):
@@ -69,3 +69,13 @@ class CreativeWorkForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp3', 'wav', 'pdf', 'txt'], 'Allowed files are images, audio, or documents.')
     ])
     submit = SubmitField('Share Work')
+
+class CertificateForm(FlaskForm):
+    title = StringField('Certificate Title', validators=[DataRequired(), Length(max=150)])
+    issuing_organization = StringField('Issuing Organization', validators=[DataRequired(), Length(max=150)])
+    date_issued = DateField('Date Issued (YYYY-MM-DD)', format='%Y-%m-%d', validators=[DataRequired()])
+    certificate_file = FileField('Upload Certificate File', validators=[
+        DataRequired(),
+        FileAllowed(['pdf', 'png', 'jpg', 'jpeg'], 'PDF or Image files only!')
+    ])
+    submit = SubmitField('Add Certificate')
