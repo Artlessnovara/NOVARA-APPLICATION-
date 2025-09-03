@@ -54,12 +54,21 @@ def test_signup_and_login():
             return
 
         print("\nTesting login...")
+        # After login, the user is redirected, so we follow redirects
         r = s.post(f"{BASE_URL}/auth/login", data=login_data, allow_redirects=True)
 
-        if r.status_code == 200 and "Test User" in r.text:
-            print("Login successful!")
+        # The final page after all redirects should be the dashboard.
+        # For a new user, it first goes to /welcome, then to / when completed.
+        # Let's simulate completing the welcome process.
+
+        if "welcome" in r.url:
+            print("Redirected to welcome page as expected.")
+            r = s.get(f"{BASE_URL}/welcome/complete", allow_redirects=True)
+
+        if r.status_code == 200 and "Home Dashboard" in r.text:
+            print("Login successful and dashboard loaded!")
         else:
-            print(f"Login failed. Status: {r.status_code}, Response: {r.text[:200]}")
+            print(f"Login failed or dashboard not found. Status: {r.status_code}, URL: {r.url}, Response: {r.text[:200]}")
 
 
 if __name__ == '__main__':

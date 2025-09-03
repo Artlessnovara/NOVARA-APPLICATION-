@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-4">Welcome to Scholars Novara Institute</h1>
-    <p class="lead">Where Learning Becomes Living.</p>
-    <hr class="my-4">
-    <p>Education, Innovation, Lifestyle, Creativity.</p>
-    {% if not current_user.is_authenticated %}
-    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.signup') }}" role="button">Join our community today</a>
-    {% endif %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Home Dashboard</h5>
+                    <p class="card-text">This is the main hub after login. The feed will be displayed here in a future phase.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,35 @@
+/* Styles for the main dashboard layout */
+
+body {
+    /* Add padding to the top and bottom to account for the fixed nav bars */
+    padding-top: 56px; /* Height of the top navbar */
+    padding-bottom: 56px; /* Height of the bottom navbar */
+}
+
+.top-nav {
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.bottom-nav {
+    border-top: 1px solid #e7e7e7;
+    background-color: #ffffff;
+    padding: 0.5rem 0;
+}
+
+.bottom-nav .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.bottom-nav .nav-link.active {
+    color: #007bff;
+}
+
+.bottom-nav .nav-link i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
