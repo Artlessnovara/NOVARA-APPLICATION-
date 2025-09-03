@@ -1,12 +1,13 @@
 import os
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project, Media, Comment
-from forms import PostForm, ProjectForm
+from models import User, Post, Like, Community, Project, Media, Comment, Story
+from forms import PostForm, ProjectForm, StoryForm
 
 bp = Blueprint('main', __name__)
 
@@ -259,3 +260,53 @@ def add_comment(post_id):
             'full_name': comment.author.full_name
         }
     }), 201
+
+@bp.route('/story/create', methods=['GET', 'POST'])
+@login_required
+def create_story():
+    form = StoryForm()
+    if form.validate_on_submit():
+        file = form.media.data
+        filename = secure_filename(file.filename)
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads/stories')
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        media_type = get_media_type(filename)
+        db_file_path = os.path.join('uploads/stories', filename)
+
+        new_story = Story(
+            media_type=media_type,
+            file_path=db_file_path,
+            author=current_user
+        )
+        db.session.add(new_story)
+        db.session.commit()
+        flash('Your story has been posted!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('create_story.html', title='Create Story', form=form)
+
+@bp.route('/api/stories')
+@login_required
+def get_stories():
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    stories = Story.query.filter(Story.timestamp > twenty_four_hours_ago).order_by(Story.timestamp.desc()).all()
+
+    stories_by_user = {}
+    for story in stories:
+        user_id = story.author.id
+        if user_id not in stories_by_user:
+            stories_by_user[user_id] = {
+                'user_id': user_id,
+                'user_full_name': story.author.full_name,
+                'user_avatar': 'https://via.placeholder.com/60', # Placeholder avatar
+                'stories': []
+            }
+        stories_by_user[user_id]['stories'].append({
+            'id': story.id,
+            'file_path': url_for('static', filename=story.file_path),
+            'media_type': story.media_type,
+            'timestamp': story.timestamp.isoformat()
+        })
+
+    return jsonify(list(stories_by_user.values()))

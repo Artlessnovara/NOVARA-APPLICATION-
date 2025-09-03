@@ -1,0 +1,126 @@
+/* Stories Carousel on Home Page */
+.stories-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    background-color: #fff;
+    border-bottom: 1px solid #dbdbdb;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.stories-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
+
+.story {
+    margin-right: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.story-circle {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    border: 2px solid #c13584;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+}
+
+.story-circle img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story .username {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 5px;
+    color: #262626;
+}
+
+/* Story Viewer Modal */
+.story-viewer-modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.story-viewer-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 400px; /* Mobile-like view */
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-story-viewer {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.story-media-container {
+    width: 100%;
+    height: auto;
+}
+
+.story-media-container img,
+.story-media-container video {
+    width: 100%;
+    height: auto;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.story-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.story-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.story-navigation {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+}
+
+.story-navigation button {
+    background: rgba(0,0,0,0.3);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    padding: 0 1rem;
+    cursor: pointer;
+}
