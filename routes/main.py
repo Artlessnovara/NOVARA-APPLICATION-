@@ -5,7 +5,7 @@ from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project, Media
+from models import User, Post, Like, Community, Project, Media, Comment
 from forms import PostForm, ProjectForm
 
 bp = Blueprint('main', __name__)
@@ -216,3 +216,46 @@ def innovation_hub():
     projects = Project.query.order_by(Project.timestamp.desc()).all()
     return render_template('innovation_hub.html', title='Innovation Hub',
                            projects=projects, active_nav='innovation')
+
+@bp.route('/comments/<int:post_id>', methods=['GET'])
+@login_required
+def get_comments(post_id):
+    post = Post.query.get_or_404(post_id)
+    comments = []
+    for comment in post.comments.order_by(Comment.timestamp.asc()).all():
+        comments.append({
+            'id': comment.id,
+            'text_content': comment.text_content,
+            'timestamp': comment.timestamp.strftime('%b %d, %Y at %I:%M %p'),
+            'author': {
+                'id': comment.author.id,
+                'full_name': comment.author.full_name
+            }
+        })
+    return jsonify(comments)
+
+@bp.route('/comment/<int:post_id>', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    post = Post.query.get_or_404(post_id)
+    data = request.get_json()
+    if not data or not data.get('text_content'):
+        return jsonify({'error': 'Comment text is required.'}), 400
+
+    comment = Comment(
+        text_content=data['text_content'],
+        author=current_user,
+        post_id=post.id
+    )
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        'id': comment.id,
+        'text_content': comment.text_content,
+        'timestamp': comment.timestamp.strftime('%b %d, %Y at %I:%M %p'),
+        'author': {
+            'id': comment.author.id,
+            'full_name': comment.author.full_name
+        }
+    }), 201
