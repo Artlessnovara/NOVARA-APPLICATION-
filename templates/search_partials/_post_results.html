@@ -1,0 +1,22 @@
+<h5 class="mb-3 text-light">Posts</h5>
+{% for post in post_results %}
+<div class="card mb-2 result-card">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+            <img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Avatar">
+            <small class="text-muted">
+                <a href="{{ url_for('main.profile', user_id=post.author.id) }}" class="text-light">{{ post.author.full_name }}</a>
+                · {{ post.timestamp.strftime('%b %d') }}
+            </small>
+        </div>
+        <p class="card-text">{{ post.text_content|truncate(150) }}</p>
+        <!-- In a real app, this would link to a single post view -->
+        <a href="#" class="stretched-link"></a>
+    </div>
+</div>
+{% else %}
+    {% if active_tab != 'all' %}
+    <p class="text-muted">No posts found matching your search.</p>
+    {% endif %}
+{% endfor %}
+<hr class="my-4">

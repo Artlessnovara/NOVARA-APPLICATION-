@@ -91,7 +91,9 @@
                             <i class="far fa-comment-alt"></i> Comment
                         </button>
                         <button class="btn btn-light flex-fill"><i class="fas fa-share"></i> Share</button>
-                        <button class="btn btn-light flex-fill"><i class="far fa-bookmark"></i> Save</button>
+                        <a href="#" class="btn btn-light flex-fill bookmark-btn {% if current_user.has_bookmarked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
+                            <i class="{% if current_user.has_bookmarked_post(post) %}fas{% else %}far{% endif %} fa-bookmark"></i> Save
+                        </a>
                     </div>
                     <div class="text-muted small p-2">
                         <span class="like-count">{{ post.likes.count() }}</span> likes · <span class="comment-count">{{ post.comments.count() }}</span> comments

@@ -6,8 +6,8 @@ from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project, Media, Comment, Story, CreativeWork
-from forms import PostForm, ProjectForm, StoryForm, CreativeWorkForm
+from models import User, Post, Like, Community, Project, Media, Comment, Story, CreativeWork, Certificate
+from forms import PostForm, ProjectForm, StoryForm, CreativeWorkForm, CertificateForm
 
 bp = Blueprint('main', __name__)
 
@@ -16,7 +16,29 @@ bp = Blueprint('main', __name__)
 def profile(user_id):
     user = User.query.get_or_404(user_id)
     posts = user.posts.order_by(Post.timestamp.desc()).all()
-    return render_template('profile.html', title=f"{user.full_name}'s Profile", user=user, posts=posts)
+    return render_template('profile.html', title=f"{user.full_name}'s Profile", user=user, posts=posts, active_nav='profile')
+
+@bp.route('/user/<int:user_id>/toggle_follow', methods=['POST'])
+@login_required
+def toggle_follow(user_id):
+    user_to_follow = User.query.get_or_404(user_id)
+    if user_to_follow == current_user:
+        return jsonify({'success': False, 'message': 'You cannot follow yourself.'}), 400
+
+    if current_user.is_following(user_to_follow):
+        current_user.unfollow(user_to_follow)
+        db.session.commit()
+        is_following = False
+    else:
+        current_user.follow(user_to_follow)
+        db.session.commit()
+        is_following = True
+
+    return jsonify({
+        'success': True,
+        'is_following': is_following,
+        'followers_count': user_to_follow.followers.count()
+    })
 
 @bp.route('/')
 @login_required
@@ -43,28 +65,42 @@ def welcome_complete():
 @bp.route('/search', methods=['GET'])
 @login_required
 def search():
-    query = request.args.get('q', '')
+    query = request.args.get('q', '').strip()
     active_tab = request.args.get('tab', 'all')
-    people_results = []
 
-    # In the future, this will handle different tabs and result types.
-    # For now, 'all' and 'people' will both search for users.
+    people_results = []
+    post_results = []
+    community_results = []
+
     if query:
         search_term = f"%{query}%"
-        if active_tab in ['all', 'people']:
-            people_results = User.query.filter(
-                or_(
-                    User.full_name.ilike(search_term),
-                    User.email.ilike(search_term)
-                )
-            ).all()
+
+        # Search People
+        people_results = User.query.filter(
+            or_(
+                User.full_name.ilike(search_term),
+                User.email.ilike(search_term)
+            )
+        ).limit(10).all()
+
+        # Search Posts
+        post_results = Post.query.filter(
+            Post.text_content.ilike(search_term)
+        ).order_by(Post.timestamp.desc()).limit(10).all()
+
+        # Search Communities
+        community_results = Community.query.filter(
+            Community.name.ilike(search_term)
+        ).limit(10).all()
 
     return render_template(
         'search.html',
         query=query,
         people_results=people_results,
+        post_results=post_results,
+        community_results=community_results,
         active_tab=active_tab,
-        active_nav='search' # Although there is no search icon in bottom nav, good practice
+        active_nav='search'
     )
 
 def get_media_type(filename):
@@ -163,6 +199,20 @@ def toggle_join(community_id):
         'is_member': is_member,
         'member_count': community.members.count()
     })
+
+@bp.route('/post/<int:post_id>/toggle_bookmark', methods=['POST'])
+@login_required
+def toggle_bookmark(post_id):
+    post = Post.query.get_or_404(post_id)
+    if current_user.has_bookmarked_post(post):
+        current_user.unbookmark_post(post)
+        db.session.commit()
+        bookmarked = False
+    else:
+        current_user.bookmark_post(post)
+        db.session.commit()
+        bookmarked = True
+    return jsonify({'success': True, 'bookmarked': bookmarked})
 
 @bp.route('/like/<int:post_id>', methods=['POST'])
 @login_required
@@ -328,6 +378,35 @@ def upload_creative_work():
         return redirect(url_for('main.creativity_hub'))
 
     return render_template('create_creative_work.html', title='Share Your Work', form=form)
+
+@bp.route('/certificate/add', methods=['GET', 'POST'])
+@login_required
+def add_certificate():
+    form = CertificateForm()
+    if form.validate_on_submit():
+        file = form.certificate_file.data
+        filename = secure_filename(file.filename)
+
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads/certificates')
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        db_file_path = os.path.join('uploads/certificates', filename)
+
+        new_cert = Certificate(
+            title=form.title.data,
+            issuing_organization=form.issuing_organization.data,
+            date_issued=form.date_issued.data,
+            file_path=db_file_path,
+            user=current_user
+        )
+        db.session.add(new_cert)
+        db.session.commit()
+        flash('Your certificate has been added!', 'success')
+        return redirect(url_for('main.profile', user_id=current_user.id))
+
+    return render_template('add_certificate.html', title='Add Certificate', form=form)
 
 @bp.route('/api/stories')
 @login_required

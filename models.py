@@ -21,6 +21,11 @@ followers = db.Table('followers',
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
 
+bookmarks = db.Table('bookmarks',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True)
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(150), nullable=False)
@@ -46,6 +51,10 @@ class User(UserMixin, db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    bookmarked_posts = db.relationship('Post', secondary=bookmarks,
+                                       backref=db.backref('bookmarked_by', lazy='dynamic'),
+                                       lazy='dynamic')
 
     def get_id(self):
         return str(self.id)
@@ -74,6 +83,18 @@ class User(UserMixin, db.Model):
     def is_following(self, user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
+
+    def has_bookmarked_post(self, post):
+        return self.bookmarked_posts.filter(
+            bookmarks.c.post_id == post.id).count() > 0
+
+    def bookmark_post(self, post):
+        if not self.has_bookmarked_post(post):
+            self.bookmarked_posts.append(post)
+
+    def unbookmark_post(self, post):
+        if self.has_bookmarked_post(post):
+            self.bookmarked_posts.remove(post)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -167,3 +188,16 @@ class CreativeWork(db.Model):
 
     def __repr__(self):
         return f'<CreativeWork {self.title}>'
+
+class Certificate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    issuing_organization = db.Column(db.String(150), nullable=False)
+    date_issued = db.Column(db.Date, nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('certificates', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<Certificate {self.title}>'
