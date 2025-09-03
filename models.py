@@ -71,14 +71,22 @@ class Project(db.Model):
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text_content = db.Column(db.Text, nullable=False)
+    text_content = db.Column(db.Text, nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=True)
     likes = db.relationship('Like', backref='post', lazy='dynamic')
+    media = db.relationship('Media', backref='post', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Post {self.text_content[:50]}...>'
+
+class Media(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    media_type = db.Column(db.String(50), nullable=False) # 'image' or 'video'
+    file_path = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)

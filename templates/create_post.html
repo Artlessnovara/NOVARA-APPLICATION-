@@ -6,7 +6,7 @@
         <div class="col-md-8 offset-md-2">
             <h3>Create a New Post</h3>
             <div>
-                {{ wtf.quick_form(form) }}
+                {{ wtf.quick_form(form, enctype='multipart/form-data') }}
             </div>
         </div>
     </div>
