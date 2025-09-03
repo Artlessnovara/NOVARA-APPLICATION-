@@ -70,7 +70,21 @@
                     <div class="post-content">
                         <p>{{ post.text_content }}</p>
                     </div>
-                    <!-- Placeholder for media -->
+                    <!-- Media Display -->
+                    {% if post.media.count() > 0 %}
+                        <div class="post-media-container mt-3">
+                            {% for media_item in post.media %}
+                                {% if media_item.media_type == 'image' %}
+                                    <img src="{{ url_for('static', filename=media_item.file_path) }}" class="img-fluid" alt="Post media">
+                                {% elif media_item.media_type == 'video' %}
+                                    <video controls class="img-fluid">
+                                        <source src="{{ url_for('static', filename=media_item.file_path) }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 <!-- Engagement Row -->
                 <div class="card-footer bg-transparent engagement-row">

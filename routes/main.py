@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+import os
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project
+from models import User, Post, Like, Community, Project, Media
 from forms import PostForm, ProjectForm
 
 bp = Blueprint('main', __name__)
@@ -57,6 +59,16 @@ def search():
         active_nav='search' # Although there is no search icon in bottom nav, good practice
     )
 
+def get_media_type(filename):
+    image_exts = ['jpg', 'jpeg', 'png', 'gif']
+    video_exts = ['mp4', 'mov', 'avi']
+    ext = filename.split('.')[-1].lower()
+    if ext in image_exts:
+        return 'image'
+    elif ext in video_exts:
+        return 'video'
+    return None
+
 @bp.route('/create-post', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -66,11 +78,40 @@ def create_post():
     form.community.choices.insert(0, (0, 'Main Feed (No Community)'))
 
     if form.validate_on_submit():
+        # Check for empty submission
+        if not form.text_content.data and not form.media.data:
+            flash('You must provide either text or a media file.', 'warning')
+            return render_template('create_post.html', title='New Post', form=form)
+
         community_id = form.community.data
         post = Post(text_content=form.text_content.data,
                     author=current_user,
                     community_id=community_id if community_id != 0 else None)
         db.session.add(post)
+        db.session.flush() # Use flush to get the post ID before committing
+
+        # Handle file uploads
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads')
+
+        for file in form.media.data:
+            if file:
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(upload_folder, filename)
+                file.save(file_path)
+
+                media_type = get_media_type(filename)
+                if not media_type:
+                    # This should ideally not happen due to form validation, but as a safeguard:
+                    continue
+
+                # Store a path relative to the static folder for URL generation
+                db_file_path = os.path.join('uploads', filename)
+
+                new_media = Media(media_type=media_type,
+                                  file_path=db_file_path,
+                                  post_id=post.id)
+                db.session.add(new_media)
+
         db.session.commit()
         flash('Your post has been created!', 'success')
         # Redirect to the community page if posted there, otherwise to the main feed
