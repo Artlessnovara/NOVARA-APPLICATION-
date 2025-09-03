@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>Sign Up</h2>
+        <form method="POST" action="{{ url_for('auth.signup') }}">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_field(form.full_name) }}
+            {{ wtf.form_field(form.email) }}
+            {{ wtf.form_field(form.password) }}
+            {{ wtf.form_field(form.confirm_password) }}
+            {{ wtf.form_field(form.role) }}
+            {{ wtf.form_field(form.submit) }}
+        </form>
+    </div>
+</div>
+{% endblock %}

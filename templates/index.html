@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to Scholars Novara Institute</h1>
+    <p class="lead">Where Learning Becomes Living.</p>
+    <hr class="my-4">
+    <p>Education, Innovation, Lifestyle, Creativity.</p>
+    {% if not current_user.is_authenticated %}
+    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.signup') }}" role="button">Join our community today</a>
+    {% endif %}
+</div>
+{% endblock %}
