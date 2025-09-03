@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     owned_projects = db.relationship('Project', backref='owner', lazy='dynamic')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     communities = db.relationship('Community', secondary=community_members,
                                   backref=db.backref('members', lazy='dynamic'),
@@ -77,6 +78,7 @@ class Post(db.Model):
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=True)
     likes = db.relationship('Like', backref='post', lazy='dynamic')
     media = db.relationship('Media', backref='post', lazy='dynamic', cascade="all, delete-orphan")
+    comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Post {self.text_content[:50]}...>'
@@ -92,3 +94,13 @@ class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text_content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Comment {self.text_content[:50]}...>'

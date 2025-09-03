@@ -92,19 +92,29 @@
                         <a href="#" class="btn btn-light flex-fill like-btn {% if current_user.has_liked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
                             <i class="far fa-heart"></i> Like
                         </a>
-                        <button class="btn btn-light flex-fill"><i class="far fa-comment-alt"></i> Comment</button>
+                        <button class="btn btn-light flex-fill comment-btn" data-post-id="{{ post.id }}">
+                            <i class="far fa-comment-alt"></i> Comment
+                        </button>
                         <button class="btn btn-light flex-fill"><i class="fas fa-share"></i> Share</button>
                         <button class="btn btn-light flex-fill"><i class="far fa-bookmark"></i> Save</button>
                     </div>
                     <div class="text-muted small p-2">
-                        <span class="like-count">{{ post.likes.count() }}</span> likes · 0 comments
+                        <span class="like-count">{{ post.likes.count() }}</span> likes · <span class="comment-count">{{ post.comments.count() }}</span> comments
                     </div>
                 </div>
-                <!-- Comment Preview -->
-                <div class="card-footer bg-transparent border-0">
-                     <div class="comment-preview">
-                        <strong>Another User</strong> This is a great post!
+                <!-- Comment Section -->
+                <div class="card-footer bg-light border-0 comment-section" id="comments-section-{{ post.id }}" style="display: none;">
+                    <div class="comment-list mb-3" id="comment-list-{{ post.id }}">
+                        <!-- Comments will be loaded here by JavaScript -->
                     </div>
+                    <form class="comment-form" data-post-id="{{ post.id }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-sm" placeholder="Add a comment..." name="text_content" required>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         {% else %}
