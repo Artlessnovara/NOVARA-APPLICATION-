@@ -16,14 +16,20 @@ class SignupForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
 from wtforms import TextAreaField
+from flask_wtf.file import FileField, MultipleFileField, FileAllowed
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
+from wtforms.validators import Optional
+
 class PostForm(FlaskForm):
-    text_content = TextAreaField("What's on your mind?", validators=[DataRequired(), Length(min=1, max=500)])
+    text_content = TextAreaField("What's on your mind?", validators=[Optional(), Length(min=0, max=500)])
+    media = MultipleFileField('Add Photos/Videos', validators=[
+        FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'], 'Images or Videos only!')
+    ])
     community = SelectField('Post to Community', coerce=int)
     submit = SubmitField('Post')
 
@@ -32,3 +38,10 @@ class ProjectForm(FlaskForm):
     tagline = StringField('Tagline', validators=[DataRequired(), Length(min=10, max=250)])
     description = TextAreaField('Detailed Description', validators=[DataRequired(), Length(min=50)])
     submit = SubmitField('Pitch Project')
+
+class StoryForm(FlaskForm):
+    media = FileField('Upload Image or Video', validators=[
+        DataRequired(),
+        FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'], 'Images or Videos only!')
+    ])
+    submit = SubmitField('Post Story')

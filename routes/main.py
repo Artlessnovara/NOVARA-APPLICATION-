@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+import os
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
 from app import db
-from models import User, Post, Like, Community, Project
-from forms import PostForm, ProjectForm
+from models import User, Post, Like, Community, Project, Media, Comment, Story
+from forms import PostForm, ProjectForm, StoryForm
 
 bp = Blueprint('main', __name__)
 
@@ -57,6 +60,16 @@ def search():
         active_nav='search' # Although there is no search icon in bottom nav, good practice
     )
 
+def get_media_type(filename):
+    image_exts = ['jpg', 'jpeg', 'png', 'gif']
+    video_exts = ['mp4', 'mov', 'avi']
+    ext = filename.split('.')[-1].lower()
+    if ext in image_exts:
+        return 'image'
+    elif ext in video_exts:
+        return 'video'
+    return None
+
 @bp.route('/create-post', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -66,11 +79,40 @@ def create_post():
     form.community.choices.insert(0, (0, 'Main Feed (No Community)'))
 
     if form.validate_on_submit():
+        # Check for empty submission
+        if not form.text_content.data and not form.media.data:
+            flash('You must provide either text or a media file.', 'warning')
+            return render_template('create_post.html', title='New Post', form=form)
+
         community_id = form.community.data
         post = Post(text_content=form.text_content.data,
                     author=current_user,
                     community_id=community_id if community_id != 0 else None)
         db.session.add(post)
+        db.session.flush() # Use flush to get the post ID before committing
+
+        # Handle file uploads
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads')
+
+        for file in form.media.data:
+            if file:
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(upload_folder, filename)
+                file.save(file_path)
+
+                media_type = get_media_type(filename)
+                if not media_type:
+                    # This should ideally not happen due to form validation, but as a safeguard:
+                    continue
+
+                # Store a path relative to the static folder for URL generation
+                db_file_path = os.path.join('uploads', filename)
+
+                new_media = Media(media_type=media_type,
+                                  file_path=db_file_path,
+                                  post_id=post.id)
+                db.session.add(new_media)
+
         db.session.commit()
         flash('Your post has been created!', 'success')
         # Redirect to the community page if posted there, otherwise to the main feed
@@ -135,6 +177,20 @@ def like(post_id):
 
     return jsonify({'success': True, 'likes_count': post.likes.count(), 'liked': liked})
 
+@bp.route('/post/<int:post_id>/toggle-save', methods=['POST'])
+@login_required
+def toggle_save(post_id):
+    post = Post.query.get_or_404(post_id)
+    if current_user.has_saved_post(post):
+        current_user.saved_posts.remove(post)
+        db.session.commit()
+        saved = False
+    else:
+        current_user.saved_posts.append(post)
+        db.session.commit()
+        saved = True
+    return jsonify({'success': True, 'saved': saved})
+
 @bp.route('/project/<int:project_id>/toggle_support', methods=['POST'])
 @login_required
 def toggle_support(project_id):
@@ -175,3 +231,96 @@ def innovation_hub():
     projects = Project.query.order_by(Project.timestamp.desc()).all()
     return render_template('innovation_hub.html', title='Innovation Hub',
                            projects=projects, active_nav='innovation')
+
+@bp.route('/comments/<int:post_id>', methods=['GET'])
+@login_required
+def get_comments(post_id):
+    post = Post.query.get_or_404(post_id)
+    comments = []
+    for comment in post.comments.order_by(Comment.timestamp.asc()).all():
+        comments.append({
+            'id': comment.id,
+            'text_content': comment.text_content,
+            'timestamp': comment.timestamp.strftime('%b %d, %Y at %I:%M %p'),
+            'author': {
+                'id': comment.author.id,
+                'full_name': comment.author.full_name
+            }
+        })
+    return jsonify(comments)
+
+@bp.route('/comment/<int:post_id>', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    post = Post.query.get_or_404(post_id)
+    data = request.get_json()
+    if not data or not data.get('text_content'):
+        return jsonify({'error': 'Comment text is required.'}), 400
+
+    comment = Comment(
+        text_content=data['text_content'],
+        author=current_user,
+        post_id=post.id
+    )
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        'id': comment.id,
+        'text_content': comment.text_content,
+        'timestamp': comment.timestamp.strftime('%b %d, %Y at %I:%M %p'),
+        'author': {
+            'id': comment.author.id,
+            'full_name': comment.author.full_name
+        }
+    }), 201
+
+@bp.route('/story/create', methods=['GET', 'POST'])
+@login_required
+def create_story():
+    form = StoryForm()
+    if form.validate_on_submit():
+        file = form.media.data
+        filename = secure_filename(file.filename)
+        upload_folder = os.path.join(os.getcwd(), 'static/uploads/stories')
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        media_type = get_media_type(filename)
+        db_file_path = os.path.join('uploads/stories', filename)
+
+        new_story = Story(
+            media_type=media_type,
+            file_path=db_file_path,
+            author=current_user
+        )
+        db.session.add(new_story)
+        db.session.commit()
+        flash('Your story has been posted!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('create_story.html', title='Create Story', form=form)
+
+@bp.route('/api/stories')
+@login_required
+def get_stories():
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    stories = Story.query.filter(Story.timestamp > twenty_four_hours_ago).order_by(Story.timestamp.desc()).all()
+
+    stories_by_user = {}
+    for story in stories:
+        user_id = story.author.id
+        if user_id not in stories_by_user:
+            stories_by_user[user_id] = {
+                'user_id': user_id,
+                'user_full_name': story.author.full_name,
+                'user_avatar': 'https://via.placeholder.com/60', # Placeholder avatar
+                'stories': []
+            }
+        stories_by_user[user_id]['stories'].append({
+            'id': story.id,
+            'file_path': url_for('static', filename=story.file_path),
+            'media_type': story.media_type,
+            'timestamp': story.timestamp.isoformat()
+        })
+
+    return jsonify(list(stories_by_user.values()))

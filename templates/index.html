@@ -8,22 +8,15 @@
 <div class="row">
     <div class="col-md-8 offset-md-2 p-0">
         <!-- Stories Carousel -->
-        <div class="stories-container">
-            <!-- Add Story -->
-            <div class="story">
+        <div class="stories-container" id="stories-container">
+            <!-- "Add Story" Button -->
+            <a href="{{ url_for('main.create_story') }}" class="story text-center text-decoration-none">
                 <div class="story-circle">
-                    <img src="https://via.placeholder.com/60/007bff/ffffff?text=+" alt="Add Story">
+                    <img src="https://via.placeholder.com/60/007bff/ffffff?text=+" alt="Add Story" class="rounded-circle">
                 </div>
-                <div class="username">Add Story</div>
-            </div>
-            <!-- Example Story -->
-            <div class="story">
-                <div class="story-circle">
-                    <img src="https://via.placeholder.com/60" alt="User Story">
-                </div>
-                <div class="username">test_user</div>
-            </div>
-            <!-- Add more example stories as needed -->
+                <div class="username text-muted small">Add Story</div>
+            </a>
+            <!-- Other stories will be loaded here by JavaScript -->
         </div>
 
         <!-- Status Composer -->
@@ -70,7 +63,21 @@
                     <div class="post-content">
                         <p>{{ post.text_content }}</p>
                     </div>
-                    <!-- Placeholder for media -->
+                    <!-- Media Display -->
+                    {% if post.media.count() > 0 %}
+                        <div class="post-media-container mt-3">
+                            {% for media_item in post.media %}
+                                {% if media_item.media_type == 'image' %}
+                                    <img src="{{ url_for('static', filename=media_item.file_path) }}" class="img-fluid" alt="Post media">
+                                {% elif media_item.media_type == 'video' %}
+                                    <video controls class="img-fluid">
+                                        <source src="{{ url_for('static', filename=media_item.file_path) }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
                 <!-- Engagement Row -->
                 <div class="card-footer bg-transparent engagement-row">
@@ -78,19 +85,31 @@
                         <a href="#" class="btn btn-light flex-fill like-btn {% if current_user.has_liked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
                             <i class="far fa-heart"></i> Like
                         </a>
-                        <button class="btn btn-light flex-fill"><i class="far fa-comment-alt"></i> Comment</button>
+                        <button class="btn btn-light flex-fill comment-btn" data-post-id="{{ post.id }}">
+                            <i class="far fa-comment-alt"></i> Comment
+                        </button>
                         <button class="btn btn-light flex-fill"><i class="fas fa-share"></i> Share</button>
-                        <button class="btn btn-light flex-fill"><i class="far fa-bookmark"></i> Save</button>
+                        <a href="#" class="btn btn-light flex-fill save-btn {% if current_user.has_saved_post(post) %}text-primary{% endif %}" data-post-id="{{ post.id }}">
+                            <i class="{% if current_user.has_saved_post(post) %}fas{% else %}far{% endif %} fa-bookmark"></i> Save
+                        </a>
                     </div>
                     <div class="text-muted small p-2">
-                        <span class="like-count">{{ post.likes.count() }}</span> likes · 0 comments
+                        <span class="like-count">{{ post.likes.count() }}</span> likes · <span class="comment-count">{{ post.comments.count() }}</span> comments
                     </div>
                 </div>
-                <!-- Comment Preview -->
-                <div class="card-footer bg-transparent border-0">
-                     <div class="comment-preview">
-                        <strong>Another User</strong> This is a great post!
+                <!-- Comment Section -->
+                <div class="card-footer bg-light border-0 comment-section" id="comments-section-{{ post.id }}" style="display: none;">
+                    <div class="comment-list mb-3" id="comment-list-{{ post.id }}">
+                        <!-- Comments will be loaded here by JavaScript -->
                     </div>
+                    <form class="comment-form" data-post-id="{{ post.id }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-sm" placeholder="Add a comment..." name="text_content" required>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         {% else %}

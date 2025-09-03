@@ -13,6 +13,7 @@
     {% if current_user.is_authenticated %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/quick_create.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stories.css') }}">
     {% endif %}
     {% block styles %}{% endblock %}
 </head>
@@ -123,6 +124,26 @@
     </div>
 {% endif %}
 
+    <!-- Story Viewer Modal -->
+    <div id="story-viewer-modal" class="story-viewer-modal">
+        <span class="close-story-viewer">&times;</span>
+        <div class="story-viewer-content">
+            <div class="story-header">
+                <img src="" alt="User Avatar" class="story-user-avatar">
+                <span class="story-user-name"></span>
+            </div>
+            <div class="story-media-container">
+                <img src="" id="story-image" style="display: none;">
+                <video src="" id="story-video" style="display: none;" autoplay></video>
+            </div>
+            <div class="story-navigation">
+                <button id="prev-story-btn">‹</button>
+                <button id="next-story-btn">›</button>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -133,6 +154,7 @@
             <script src="{{ url_for('static', filename='js/feed.js') }}"></script>
             <script src="{{ url_for('static', filename='js/communities.js') }}"></script>
             <script src="{{ url_for('static', filename='js/innovation.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/stories.js') }}"></script>
         {% endif %}
     {% endblock %}
 </body>

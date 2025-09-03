@@ -14,6 +14,12 @@ project_supporters = db.Table('project_supporters',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True)
 )
 
+# Association Table for User <-> Post many-to-many relationship (for saved posts)
+saved_posts = db.Table('saved_posts',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True)
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(150), nullable=False)
@@ -24,6 +30,8 @@ class User(UserMixin, db.Model):
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     owned_projects = db.relationship('Project', backref='owner', lazy='dynamic')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    stories = db.relationship('Story', backref='author', lazy='dynamic')
 
     communities = db.relationship('Community', secondary=community_members,
                                   backref=db.backref('members', lazy='dynamic'),
@@ -31,6 +39,9 @@ class User(UserMixin, db.Model):
     supported_projects = db.relationship('Project', secondary=project_supporters,
                                          backref=db.backref('supporters', lazy='dynamic'),
                                          lazy='dynamic')
+    saved_posts = db.relationship('Post', secondary=saved_posts,
+                                  backref=db.backref('saved_by_users', lazy='dynamic'),
+                                  lazy='dynamic')
 
     def get_id(self):
         return str(self.id)
@@ -47,6 +58,10 @@ class User(UserMixin, db.Model):
     def has_supported_project(self, project):
         return self.supported_projects.filter(
             project_supporters.c.project_id == project.id).count() > 0
+
+    def has_saved_post(self, post):
+        return self.saved_posts.filter(
+            saved_posts.c.post_id == post.id).count() > 0
 
 class Community(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,16 +86,45 @@ class Project(db.Model):
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text_content = db.Column(db.Text, nullable=False)
+    text_content = db.Column(db.Text, nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=True)
     likes = db.relationship('Like', backref='post', lazy='dynamic')
+    media = db.relationship('Media', backref='post', lazy='dynamic', cascade="all, delete-orphan")
+    comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Post {self.text_content[:50]}...>'
+
+class Media(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    media_type = db.Column(db.String(50), nullable=False) # 'image' or 'video'
+    file_path = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text_content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Comment {self.text_content[:50]}...>'
+
+class Story(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    media_type = db.Column(db.String(50), nullable=False) # 'image' or 'video'
+    file_path = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Story {self.id} by User {self.user_id}>'
