@@ -24,4 +24,5 @@ class LoginForm(FlaskForm):
 
 class PostForm(FlaskForm):
     text_content = TextAreaField("What's on your mind?", validators=[DataRequired(), Length(min=1, max=500)])
+    community = SelectField('Post to Community', coerce=int)
     submit = SubmitField('Post')

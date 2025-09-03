@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Community Header -->
+    <div class="community-header mb-4 p-4 rounded bg-light">
+        <div class="d-flex align-items-center">
+            <img src="https://via.placeholder.com/80" class="rounded mr-4" alt="Community Icon">
+            <div>
+                <h1 class="h3">{{ community.name }}</h1>
+                <p class="text-muted mb-0">{{ community.description }}</p>
+                <small>{{ community.members.count() }} members</small>
+            </div>
+            <div class="ml-auto">
+                <!-- Join/Leave button can be reused here -->
+                {% if current_user.is_member(community) %}
+                    <a href="#" class="btn btn-secondary join-leave-btn" data-community-id="{{ community.id }}">Joined</a>
+                {% else %}
+                    <a href="#" class="btn btn-success join-leave-btn" data-community-id="{{ community.id }}">Join</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" href="#">Feed</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">Resources</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">Events</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">Members</a>
+        </li>
+    </ul>
+
+    <!-- Tab Content (Feed) -->
+    <div class="mt-4">
+        {% for post in posts %}
+            <div class="card post-card">
+                <!-- Post Header -->
+                <div class="card-header d-flex align-items-center">
+                    <img src="https://via.placeholder.com/40" class="rounded-circle mr-3 post-author-avatar" alt="{{ post.author.full_name }}'s Avatar">
+                    <div class="flex-grow-1">
+                        <strong>{{ post.author.full_name }}</strong>
+                        <div class="text-muted small">
+                            {{ post.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link text-muted" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Post Content -->
+                <div class="card-body">
+                    <p>{{ post.text_content }}</p>
+                </div>
+                <!-- Engagement Row -->
+                <div class="card-footer bg-transparent engagement-row">
+                    <div class="d-flex justify-content-around">
+                        <a href="#" class="btn btn-light flex-fill like-btn {% if current_user.has_liked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
+                            <i class="far fa-heart"></i> Like
+                        </a>
+                        <button class="btn btn-light flex-fill"><i class="far fa-comment-alt"></i> Comment</button>
+                    </div>
+                    <div class="text-muted small p-2">
+                        <span class="like-count">{{ post.likes.count() }}</span> likes · 0 comments
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center text-muted">
+                    <p>No posts in this community yet. Be the first to post!</p>
+                    <a href="{{ url_for('main.create_post') }}" class="btn btn-primary btn-sm mt-2">Create Post</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

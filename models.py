@@ -2,6 +2,12 @@ from flask_login import UserMixin
 from app import db
 from datetime import datetime
 
+# Association Table for User <-> Community many-to-many relationship
+community_members = db.Table('community_members',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('community_id', db.Integer, db.ForeignKey('community.id'), primary_key=True)
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(150), nullable=False)
@@ -11,6 +17,9 @@ class User(UserMixin, db.Model):
     has_seen_welcome = db.Column(db.Boolean, default=False, nullable=False)
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    communities = db.relationship('Community', secondary=community_members,
+                                  backref=db.backref('members', lazy='dynamic'),
+                                  lazy='dynamic')
 
     def get_id(self):
         return str(self.id)
@@ -20,11 +29,26 @@ class User(UserMixin, db.Model):
             Like.user_id == self.id,
             Like.post_id == post.id).count() > 0
 
+    def is_member(self, community):
+        return self.communities.filter(
+            community_members.c.community_id == community.id).count() > 0
+
+class Community(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    posts = db.relationship('Post', backref='community', lazy='dynamic')
+
+    def __repr__(self):
+        return f'<Community {self.name}>'
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text_content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=True)
     likes = db.relationship('Like', backref='post', lazy='dynamic')
 
     def __repr__(self):

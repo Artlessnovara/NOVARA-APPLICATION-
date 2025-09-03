@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from app import db
-from models import User, Post, Like
+from models import User, Post, Like, Community
 from forms import PostForm
 
 bp = Blueprint('main', __name__)
@@ -14,7 +14,7 @@ def index():
     if not current_user.has_seen_welcome:
         return redirect(url_for('main.welcome'))
     posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home', posts=posts, active_nav='home')
 
 @bp.route('/welcome')
 @login_required
@@ -53,20 +53,67 @@ def search():
         'search.html',
         query=query,
         people_results=people_results,
-        active_tab=active_tab
+        active_tab=active_tab,
+        active_nav='search' # Although there is no search icon in bottom nav, good practice
     )
 
 @bp.route('/create-post', methods=['GET', 'POST'])
 @login_required
 def create_post():
     form = PostForm()
+    # Populate the choices for the community dropdown
+    form.community.choices = [(c.id, c.name) for c in current_user.communities.order_by('name')]
+    form.community.choices.insert(0, (0, 'Main Feed (No Community)'))
+
     if form.validate_on_submit():
-        post = Post(text_content=form.text_content.data, author=current_user)
+        community_id = form.community.data
+        post = Post(text_content=form.text_content.data,
+                    author=current_user,
+                    community_id=community_id if community_id != 0 else None)
         db.session.add(post)
         db.session.commit()
         flash('Your post has been created!', 'success')
+        # Redirect to the community page if posted there, otherwise to the main feed
+        if community_id != 0:
+            return redirect(url_for('main.community_page', community_id=community_id))
         return redirect(url_for('main.index'))
     return render_template('create_post.html', title='New Post', form=form)
+
+@bp.route('/communities')
+@login_required
+def communities():
+    all_communities = Community.query.order_by(Community.name).all()
+    my_communities = current_user.communities.order_by(Community.name).all()
+    return render_template('communities_hub.html', title='Communities',
+                           all_communities=all_communities,
+                           my_communities=my_communities,
+                           active_nav='communities')
+
+@bp.route('/community/<int:community_id>')
+@login_required
+def community_page(community_id):
+    community = Community.query.get_or_404(community_id)
+    posts = community.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('community_page.html', title=community.name, community=community, posts=posts)
+
+@bp.route('/community/<int:community_id>/toggle_join', methods=['POST'])
+@login_required
+def toggle_join(community_id):
+    community = Community.query.get_or_404(community_id)
+    if current_user.is_member(community):
+        current_user.communities.remove(community)
+        db.session.commit()
+        is_member = False
+    else:
+        current_user.communities.append(community)
+        db.session.commit()
+        is_member = True
+
+    return jsonify({
+        'success': True,
+        'is_member': is_member,
+        'member_count': community.members.count()
+    })
 
 @bp.route('/like/<int:post_id>', methods=['POST'])
 @login_required
