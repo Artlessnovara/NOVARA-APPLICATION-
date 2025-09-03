@@ -65,7 +65,7 @@ def test_signup_and_login():
             print("Redirected to welcome page as expected.")
             r = s.get(f"{BASE_URL}/welcome/complete", allow_redirects=True)
 
-        if r.status_code == 200 and "Home Dashboard" in r.text:
+        if r.status_code == 200 and "What's on your mind," in r.text:
             print("Login successful and dashboard loaded!")
         else:
             print(f"Login failed or dashboard not found. Status: {r.status_code}, URL: {r.url}, Response: {r.text[:200]}")

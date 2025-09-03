@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from app import db
-from models import User
+from models import User, Post, Like
+from forms import PostForm
 
 bp = Blueprint('main', __name__)
 
@@ -12,7 +13,8 @@ bp = Blueprint('main', __name__)
 def index():
     if not current_user.has_seen_welcome:
         return redirect(url_for('main.welcome'))
-    return render_template('index.html')
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', title='Home', posts=posts)
 
 @bp.route('/welcome')
 @login_required
@@ -53,3 +55,35 @@ def search():
         people_results=people_results,
         active_tab=active_tab
     )
+
+@bp.route('/create-post', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(text_content=form.text_content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post has been created!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('create_post.html', title='New Post', form=form)
+
+@bp.route('/like/<int:post_id>', methods=['POST'])
+@login_required
+def like(post_id):
+    post = Post.query.get_or_404(post_id)
+    like = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
+
+    if like:
+        # User has already liked the post, so unlike it
+        db.session.delete(like)
+        db.session.commit()
+        liked = False
+    else:
+        # User has not liked the post, so like it
+        like = Like(user_id=current_user.id, post_id=post.id)
+        db.session.add(like)
+        db.session.commit()
+        liked = True
+
+    return jsonify({'success': True, 'likes_count': post.likes.count(), 'liked': liked})

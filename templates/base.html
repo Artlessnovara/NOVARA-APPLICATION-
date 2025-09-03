@@ -130,6 +130,7 @@
     {% block scripts %}
         {% if current_user.is_authenticated %}
             <script src="{{ url_for('static', filename='js/quick_create.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/feed.js') }}"></script>
         {% endif %}
     {% endblock %}
 </body>

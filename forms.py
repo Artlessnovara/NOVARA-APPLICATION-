@@ -15,7 +15,13 @@ class SignupForm(FlaskForm):
     ], validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
+from wtforms import TextAreaField
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
+
+class PostForm(FlaskForm):
+    text_content = TextAreaField("What's on your mind?", validators=[DataRequired(), Length(min=1, max=500)])
+    submit = SubmitField('Post')

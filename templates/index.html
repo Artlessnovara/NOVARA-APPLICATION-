@@ -1,16 +1,105 @@
 {% extends "base.html" %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feed.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Home Dashboard</h5>
-                    <p class="card-text">This is the main hub after login. The feed will be displayed here in a future phase.</p>
+<div class="row">
+    <div class="col-md-8 offset-md-2 p-0">
+        <!-- Stories Carousel -->
+        <div class="stories-container">
+            <!-- Add Story -->
+            <div class="story">
+                <div class="story-circle">
+                    <img src="https://via.placeholder.com/60/007bff/ffffff?text=+" alt="Add Story">
                 </div>
+                <div class="username">Add Story</div>
+            </div>
+            <!-- Example Story -->
+            <div class="story">
+                <div class="story-circle">
+                    <img src="https://via.placeholder.com/60" alt="User Story">
+                </div>
+                <div class="username">test_user</div>
+            </div>
+            <!-- Add more example stories as needed -->
+        </div>
+
+        <!-- Status Composer -->
+        <div class="status-composer">
+            <div class="d-flex align-items-center mb-2">
+                <img src="https://via.placeholder.com/40" class="rounded-circle mr-3" alt="My Avatar">
+                <a href="{{ url_for('main.create_post') }}" class="composer-input">
+                    What's on your mind, {{ current_user.full_name.split()[0] }}?
+                </a>
+            </div>
+            <div class="d-flex justify-content-around composer-actions">
+                <button class="btn btn-light flex-fill disabled"><i class="fas fa-video text-danger"></i> Photo/Video</button>
+                <button class="btn btn-light flex-fill disabled"><i class="fas fa-calendar-alt text-success"></i> Event</button>
+                <button class="btn btn-light flex-fill disabled"><i class="fas fa-folder text-info"></i> Resource</button>
             </div>
         </div>
+
+        <!-- Feed of Posts -->
+        {% for post in posts %}
+            <div class="card post-card">
+                <!-- Post Header -->
+                <div class="card-header d-flex align-items-center">
+                    <img src="https://via.placeholder.com/40" class="rounded-circle mr-3 post-author-avatar" alt="{{ post.author.full_name }}'s Avatar">
+                    <div class="flex-grow-1">
+                        <strong>{{ post.author.full_name }}</strong>
+                        <div class="text-muted small">
+                            {{ post.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
+                            <!-- Placeholder for community tag -->
+                            <!-- · <a href="#">Community Name</a> -->
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link text-muted" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#">Save post</a>
+                            <a class="dropdown-item" href="#">Report post</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Post Content -->
+                <div class="card-body">
+                    <div class="post-content">
+                        <p>{{ post.text_content }}</p>
+                    </div>
+                    <!-- Placeholder for media -->
+                </div>
+                <!-- Engagement Row -->
+                <div class="card-footer bg-transparent engagement-row">
+                    <div class="d-flex justify-content-around">
+                        <a href="#" class="btn btn-light flex-fill like-btn {% if current_user.has_liked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
+                            <i class="far fa-heart"></i> Like
+                        </a>
+                        <button class="btn btn-light flex-fill"><i class="far fa-comment-alt"></i> Comment</button>
+                        <button class="btn btn-light flex-fill"><i class="fas fa-share"></i> Share</button>
+                        <button class="btn btn-light flex-fill"><i class="far fa-bookmark"></i> Save</button>
+                    </div>
+                    <div class="text-muted small p-2">
+                        <span class="like-count">{{ post.likes.count() }}</span> likes · 0 comments
+                    </div>
+                </div>
+                <!-- Comment Preview -->
+                <div class="card-footer bg-transparent border-0">
+                     <div class="comment-preview">
+                        <strong>Another User</strong> This is a great post!
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center p-4">
+                <h5>No posts yet</h5>
+                <p class="text-muted">Be the first to share something with the community!</p>
+                <a href="{{ url_for('main.create_post') }}" class="btn btn-primary">Create a Post</a>
+            </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
