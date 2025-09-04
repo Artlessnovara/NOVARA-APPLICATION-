@@ -1,6 +1,8 @@
 from flask_login import UserMixin
 from app import db
 from datetime import datetime
+from itsdangerous import URLSafeTimedSerializer as Serializer
+from flask import current_app
 
 # Association Table for User <-> Community many-to-many relationship
 community_members = db.Table('community_members',
@@ -48,6 +50,20 @@ class User(UserMixin, db.Model):
     def has_supported_project(self, project):
         return self.supported_projects.filter(
             project_supporters.c.project_id == project.id).count() > 0
+
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id})
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, max_age=expires_sec)
+            user_id = data.get('user_id')
+        except Exception:
+            return None
+        return User.query.get(user_id)
 
 class Community(db.Model):
     id = db.Column(db.Integer, primary_key=True)
