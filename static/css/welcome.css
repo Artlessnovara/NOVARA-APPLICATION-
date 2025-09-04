@@ -42,7 +42,11 @@
 
 #welcomeCarousel .lead {
     font-size: 1.5rem;
-    font-style: italic;
+}
+
+#welcomeCarousel .offerings p {
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 
 /* Style the controls to be more visible on the gradient */

@@ -44,35 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-        // --- BOOKMARK BUTTON LOGIC ---
-        if (event.target.closest('.bookmark-btn')) {
-            event.preventDefault();
-            const button = event.target.closest('.bookmark-btn');
-            const postId = button.dataset.postId;
-            const url = `/post/${postId}/toggle_bookmark`;
-
-            fetch(url, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const icon = button.querySelector('i');
-                    if (data.bookmarked) {
-                        button.classList.add('text-primary');
-                        button.classList.remove('text-muted');
-                        icon.classList.add('fas');
-                        icon.classList.remove('far');
-                    } else {
-                        button.classList.remove('text-primary');
-                        button.classList.add('text-muted');
-                        icon.classList.add('far');
-                        icon.classList.remove('fas');
-                    }
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    });
-
     // --- COMMENT FORM SUBMISSION ---
     document.body.addEventListener('submit', function(event) {
         if (event.target.matches('.comment-form')) {

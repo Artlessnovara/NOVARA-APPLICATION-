@@ -36,14 +36,13 @@
 
         <!-- Feed of Posts -->
         {% for post in posts %}
+            {% if post.author %}
             <div class="card post-card">
                 <!-- Post Header -->
                 <div class="card-header d-flex align-items-center">
                     <img src="https://via.placeholder.com/40" class="rounded-circle mr-3 post-author-avatar" alt="{{ post.author.full_name }}'s Avatar">
                     <div class="flex-grow-1">
-                        <a href="{{ url_for('main.profile', user_id=post.author.id) }}" class="text-decoration-none text-dark">
-                            <strong>{{ post.author.full_name }}</strong>
-                        </a>
+                        <strong>{{ post.author.full_name }}</strong>
                         <div class="text-muted small">
                             {{ post.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
                             <!-- Placeholder for community tag -->
@@ -91,9 +90,7 @@
                             <i class="far fa-comment-alt"></i> Comment
                         </button>
                         <button class="btn btn-light flex-fill"><i class="fas fa-share"></i> Share</button>
-                        <a href="#" class="btn btn-light flex-fill bookmark-btn {% if current_user.has_bookmarked_post(post) %}text-primary{% else %}text-muted{% endif %}" data-post-id="{{ post.id }}">
-                            <i class="{% if current_user.has_bookmarked_post(post) %}fas{% else %}far{% endif %} fa-bookmark"></i> Save
-                        </a>
+                        <button class="btn btn-light flex-fill"><i class="far fa-bookmark"></i> Save</button>
                     </div>
                     <div class="text-muted small p-2">
                         <span class="like-count">{{ post.likes.count() }}</span> likes · <span class="comment-count">{{ post.comments.count() }}</span> comments
@@ -114,6 +111,7 @@
                     </form>
                 </div>
             </div>
+            {% endif %} {# End if post.author #}
         {% else %}
             <div class="text-center p-4">
                 <h5>No posts yet</h5>

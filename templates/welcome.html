@@ -9,26 +9,37 @@
 <div class="welcome-page-container">
     <div id="welcomeCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
         <div class="carousel-inner text-center">
+
             <!-- Slide 1: Intro -->
             <div class="carousel-item active">
                 <div>
-                    <h1>Welcome to Scholars Novara Institute.</h1>
+                    <h1>Welcome to Scholars Novara Institute</h1>
+                    <p class="lead">A new space for learning, growth, and inspiration.</p>
                 </div>
             </div>
-            <!-- Slide 2: What the app offers -->
+
+            <!-- Slide 2: What We Offer -->
             <div class="carousel-item">
                 <div>
-                    <h2>What We Offer</h2>
-                    <p class="lead">Education, Innovation, Lifestyle, Creativity.</p>
+                    <h2>Explore the Future with Us</h2>
+                    <div class="offerings mt-4">
+                        <p><strong>Education</strong> – Access knowledge that transforms lives.</p>
+                        <p><strong>Innovation</strong> – Discover creative solutions and ideas.</p>
+                        <p><strong>Lifestyle</strong> – Connect learning with daily living.</p>
+                        <p><strong>Creativity</strong> – Express yourself and build freely.</p>
+                    </div>
                 </div>
             </div>
-            <!-- Slide 3: Call to action -->
+
+            <!-- Slide 3: Call to Action -->
             <div class="carousel-item">
                 <div>
-                    <h2>Join our community today.</h2>
-                    <a href="{{ url_for('main.welcome_complete') }}" class="btn btn-light btn-lg mt-3">Get Started</a>
+                    <h2>Be Part of Something Bigger</h2>
+                    <p class="lead">Join our vibrant community of learners and creators.</p>
+                    <button id="get-started-btn" class="btn btn-light btn-lg mt-3">👉 Get Started</button>
                 </div>
             </div>
+
         </div>
         <!-- Carousel Controls -->
         <a class="carousel-control-prev" href="#welcomeCarousel" role="button" data-slide="prev">
@@ -41,4 +52,8 @@
         </a>
     </div>
 </div>
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
 {% endblock %}
