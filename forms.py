@@ -45,12 +45,3 @@ class StoryForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'], 'Images or Videos only!')
     ])
     submit = SubmitField('Post Story')
-
-class ForgotPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    submit = SubmitField('Request Password Reset')
-
-class ResetPasswordForm(FlaskForm):
-    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Reset Password')
