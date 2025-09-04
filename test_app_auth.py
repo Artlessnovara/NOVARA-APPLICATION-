@@ -75,8 +75,10 @@ class AuthTestCase(unittest.TestCase):
             }, follow_redirects=True)
 
             self.assertEqual(response.status_code, 200)
-            # A new user is redirected to the welcome page
-            self.assertIn(b'Welcome to Scholars Novara Institute', response.data)
+            # A new user is now sent to the index page, which contains the
+            # main feed and the hidden welcome modal.
+            self.assertIn(b"What's on your mind", response.data) # Check for feed content
+            self.assertIn(b'Welcome to Scholars Novara Institute', response.data) # Check for modal content
 
             # Test logout
             logout_response = self.client.get('/auth/logout', follow_redirects=True)

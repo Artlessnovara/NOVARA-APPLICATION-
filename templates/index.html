@@ -121,4 +121,84 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Welcome Modal -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="welcomeCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+                    <div class="carousel-inner text-center">
+                        <!-- Slide 1: Intro -->
+                        <div class="carousel-item active">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+                                <div>
+                                    <h1>Welcome to Scholars Novara Institute.</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Slide 2: What the app offers -->
+                        <div class="carousel-item">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+                                <div>
+                                    <h2>What We Offer</h2>
+                                    <p class="lead">Education, Innovation, Lifestyle, Creativity.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Slide 3: Call to action -->
+                        <div class="carousel-item">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+                                <div>
+                                    <h2>Join our community today.</h2>
+                                    <button type="button" id="get-started-btn" class="btn btn-primary btn-lg mt-3" data-dismiss="modal">Get Started</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Carousel Controls -->
+                    <a class="carousel-control-prev" href="#welcomeCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#welcomeCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function() {
+            // Show welcome modal for new users
+            {% if not current_user.has_seen_welcome %}
+                $('#welcomeModal').modal('show');
+            {% endif %}
+
+            // Handle the 'Get Started' button click
+            $('#get-started-btn').on('click', function() {
+                fetch("{{ url_for('main.mark_welcome_seen') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // No CSRF token needed for this simple POST, but for forms,
+                        // you'd typically include a CSRF token header.
+                    }
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Welcome flag set for user.');
+                    }
+                }).catch(error => {
+                    console.error('Error marking welcome as seen:', error);
+                });
+            });
+        });
+    </script>
 {% endblock %}
