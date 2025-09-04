@@ -1,0 +1,52 @@
+/* Styling for the Welcome Page Onboarding Carousel */
+
+/* Using a vibrant gradient background as per the spec */
+.welcome-page-container {
+    background: linear-gradient(45deg, #ffc107, #ff5722, #e91e63, #9c27b0, #3f51b5, #00bcd4);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#welcomeCarousel .carousel-inner {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#welcomeCarousel .carousel-item > div {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#welcomeCarousel h1 {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+#welcomeCarousel h2 {
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+
+#welcomeCarousel .lead {
+    font-size: 1.5rem;
+    font-style: italic;
+}
+
+/* Style the controls to be more visible on the gradient */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1) grayscale(100) brightness(2);
+}
