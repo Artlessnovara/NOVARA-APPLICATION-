@@ -1,8 +1,6 @@
 from flask_login import UserMixin
 from app import db
 from datetime import datetime
-from itsdangerous import URLSafeTimedSerializer as Serializer
-from flask import current_app
 
 # Association Table for User <-> Community many-to-many relationship
 community_members = db.Table('community_members',
@@ -16,23 +14,12 @@ project_supporters = db.Table('project_supporters',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True)
 )
 
-followers = db.Table('followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
-)
-
-bookmarks = db.Table('bookmarks',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True)
-)
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     role = db.Column(db.String(50), nullable=False) # Student, Staff, Alumni, Guest
-    has_seen_welcome = db.Column(db.Boolean, default=False, nullable=False)
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     owned_projects = db.relationship('Project', backref='owner', lazy='dynamic')
@@ -45,16 +32,6 @@ class User(UserMixin, db.Model):
     supported_projects = db.relationship('Project', secondary=project_supporters,
                                          backref=db.backref('supporters', lazy='dynamic'),
                                          lazy='dynamic')
-
-    followed = db.relationship(
-        'User', secondary=followers,
-        primaryjoin=(followers.c.follower_id == id),
-        secondaryjoin=(followers.c.followed_id == id),
-        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-
-    bookmarked_posts = db.relationship('Post', secondary=bookmarks,
-                                       backref=db.backref('bookmarked_by', lazy='dynamic'),
-                                       lazy='dynamic')
 
     def get_id(self):
         return str(self.id)
@@ -71,44 +48,6 @@ class User(UserMixin, db.Model):
     def has_supported_project(self, project):
         return self.supported_projects.filter(
             project_supporters.c.project_id == project.id).count() > 0
-
-    def follow(self, user):
-        if not self.is_following(user):
-            self.followed.append(user)
-
-    def unfollow(self, user):
-        if self.is_following(user):
-            self.followed.remove(user)
-
-    def is_following(self, user):
-        return self.followed.filter(
-            followers.c.followed_id == user.id).count() > 0
-
-    def has_bookmarked_post(self, post):
-        return self.bookmarked_posts.filter(
-            bookmarks.c.post_id == post.id).count() > 0
-
-    def bookmark_post(self, post):
-        if not self.has_bookmarked_post(post):
-            self.bookmarked_posts.append(post)
-
-    def unbookmark_post(self, post):
-        if self.has_bookmarked_post(post):
-            self.bookmarked_posts.remove(post)
-
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id})
-
-    @staticmethod
-    def verify_reset_token(token, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token, max_age=expires_sec)
-            user_id = data.get('user_id')
-        except Exception:
-            return None
-        return User.query.get(user_id)
 
 class Community(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -175,29 +114,3 @@ class Story(db.Model):
 
     def __repr__(self):
         return f'<Story {self.id} by User {self.user_id}>'
-
-class CreativeWork(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=False) # e.g., 'Art', 'Music', 'Writing'
-    file_path = db.Column(db.String(255), nullable=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    author = db.relationship('User', backref=db.backref('creative_works', lazy='dynamic'))
-
-    def __repr__(self):
-        return f'<CreativeWork {self.title}>'
-
-class Certificate(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    issuing_organization = db.Column(db.String(150), nullable=False)
-    date_issued = db.Column(db.Date, nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('certificates', lazy='dynamic'))
-
-    def __repr__(self):
-        return f'<Certificate {self.title}>'

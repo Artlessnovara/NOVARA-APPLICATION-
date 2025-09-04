@@ -36,6 +36,7 @@
 
         <!-- Feed of Posts -->
         {% for post in posts %}
+            {% if post.author %}
             <div class="card post-card">
                 <!-- Post Header -->
                 <div class="card-header d-flex align-items-center">
@@ -110,6 +111,7 @@
                     </form>
                 </div>
             </div>
+            {% endif %} {# End if post.author #}
         {% else %}
             <div class="text-center p-4">
                 <h5>No posts yet</h5>
