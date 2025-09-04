@@ -14,24 +14,8 @@ bp = Blueprint('main', __name__)
 @bp.route('/')
 @login_required
 def index():
-    if not current_user.has_seen_welcome:
-        return redirect(url_for('main.welcome'))
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     return render_template('index.html', title='Home', posts=posts, active_nav='home')
-
-@bp.route('/welcome')
-@login_required
-def welcome():
-    if current_user.has_seen_welcome:
-        return redirect(url_for('main.index'))
-    return render_template('welcome.html')
-
-@bp.route('/welcome/complete')
-@login_required
-def welcome_complete():
-    current_user.has_seen_welcome = True
-    db.session.commit()
-    return redirect(url_for('main.index'))
 
 @bp.route('/search', methods=['GET'])
 @login_required
@@ -310,3 +294,10 @@ def get_stories():
         })
 
     return jsonify(list(stories_by_user.values()))
+
+@bp.route('/api/mark-welcome-seen', methods=['POST'])
+@login_required
+def mark_welcome_seen():
+    current_user.has_seen_welcome = True
+    db.session.commit()
+    return jsonify({'success': True})
